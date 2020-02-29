@@ -9,7 +9,7 @@ IO Expander Device Library with Arduino
 
 ## Example
 
- - ready now
+ - still in preparation
 
 ```IOExpanderDemo.ino
 #include "ArduinoIOExpander.h"
