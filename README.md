@@ -1,5 +1,5 @@
 # arduino-ioexpander-lib
-IO Expander Host Library with Arduino
+Host Library with Arduino for Arduino IO Expander(see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
 
 ## Installation
 1. Download the zip file.
@@ -8,10 +8,10 @@ IO Expander Host Library with Arduino
 4. Select the zip file.
 
 ## Usage 
-1. Programming arduino-ioexpander-fw to your IO expander arduino device (see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
-2. Connecting this library user device to IO expander arduino device(see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
-3. Start IO expander arduino device 
-4. Start this library user device
+1. Programming arduino-ioexpander-fw to your IO expander device (see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
+2. Connecting Host device to IO expander device(see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
+3. Start IO expander device 
+4. Start Host device
 
 ## Example
 
