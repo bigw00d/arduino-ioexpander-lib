@@ -1,5 +1,5 @@
 # arduino-ioexpander-lib
-IO Expander Device Library with Arduino
+IO Expander Host Library with Arduino
 
 ## Installation
 1. Download the zip file.
@@ -15,8 +15,6 @@ IO Expander Device Library with Arduino
 
 ## Example
 
- - still in preparation
-
 ```IOExpanderDemo.ino
 #include "ArduinoIOExpander.h"
 
@@ -30,6 +28,7 @@ void setup()
 
 void loop()
 {
+  // still in preparation
   delay(1000);
 }
 
