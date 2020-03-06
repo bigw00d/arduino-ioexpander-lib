@@ -12,18 +12,56 @@ char readData[RW_DATA_MAX_SIZE];
 int sendCnt;
 char sendData[RW_DATA_MAX_SIZE];
 
+#define UART_CMD_PREAMBLE 0x5A
 
 #define I2C_SLAVE_ADDR 0x40
 #define CMD_READ_TEMP_HOLD 0xe3
 #define CMD_SOFT_RESET 0xfe
 
+enum UART_CMD_PHASE {
+  UART_CMD_PHASE_SW_RST = 0,    // i2c write: software reset
+  UART_CMD_PHASE_RD_TMP,        // i2c write: read temperature
+  UART_CMD_PHASE_I2C_RD_READY,  // i2c read ready
+  UART_CMD_PHASE_I2C_RD,        // i2c read
+  UART_REG_TYPE2_NUM,
+};
+int uartCmdPhase = UART_CMD_PHASE_SW_RST;
+
+#define LED_CMD_I2C_WRITE_SAMPLE_SIZE 5
+#define LED_CMD_I2C_READ_SAMPLE_SIZE 4
+#define LED_CMD_I2C_READ_SEQ_SIZE 3
+
 // Write I2C: CMD_SOFT_RESET
-#define LED_CMD_I2C_WRITE_SAMPLE_SIZE 4
-const uint8_t i2CWriteDataSample[LED_CMD_I2C_WRITE_SAMPLE_SIZE] = {
-  ((0x1D << 1) + 0),  // ADR1+W
-  0x12,               // DATA0(Register Address:I2C1)
-  I2C_SLAVE_ADDR,     // DATA1(I2C Slave Address)
-  CMD_SOFT_RESET,     // DATA2(I2C Write Data0)
+const uint8_t i2CWriteSoftReset[LED_CMD_I2C_WRITE_SAMPLE_SIZE] = {
+  ((UART_CMD_PREAMBLE << 1) + 0),  // PREAMBLE+W
+  0x12,               // Function :I2C1_WRITE
+  2,                  // Size:2
+  I2C_SLAVE_ADDR,     // DATA0(I2C Slave Address)
+  CMD_SOFT_RESET,     // DATA1(I2C Write Data0)
+};
+
+// Write I2C: CMD_READ_TEMP_HOLD
+const uint8_t i2CWriteReadTemp[LED_CMD_I2C_WRITE_SAMPLE_SIZE] = {
+  ((UART_CMD_PREAMBLE << 1) + 0),  // PREAMBLE+W
+  0x12,               // Function :I2C1_WRITE
+  2,                  // Size:2
+  I2C_SLAVE_ADDR,     // DATA0(I2C Slave Address)
+  CMD_READ_TEMP_HOLD,     // DATA1(I2C Write Data0)
+};
+
+// Read I2C(Write Sequence)
+const uint8_t i2CReadReady[LED_CMD_I2C_READ_SAMPLE_SIZE] = {
+  ((UART_CMD_PREAMBLE << 1) + 0),  // PREAMBLE+W
+  0x13,               // Function :I2C1_READ
+  1,                  // Size:1
+  I2C_SLAVE_ADDR,     // DATA0(I2C Slave Address)
+};
+
+// Read I2C(Read Sequence): 3 byte
+const uint8_t i2CReadData[LED_CMD_I2C_READ_SEQ_SIZE] = {
+  ((UART_CMD_PREAMBLE << 1) + 1),  // PREAMBLE+R
+  0x13,               // Function :I2C1_READ
+  3,                  // Size:3
 };
 
 void setSendData(char *pSendData, uint8_t *src, uint8_t sendSize) {
@@ -76,9 +114,36 @@ void loop() {
   }
 
   delay(3000);
-  // set send data
-  setSendData(&sendData[0], i2CWriteDataSample, LED_CMD_I2C_WRITE_SAMPLE_SIZE);
-  sendCnt = LED_CMD_I2C_WRITE_SAMPLE_SIZE;
+
+  switch(uartCmdPhase){
+    case UART_CMD_PHASE_SW_RST:
+      // set send data
+      setSendData(&sendData[0], i2CWriteSoftReset, LED_CMD_I2C_WRITE_SAMPLE_SIZE);
+      sendCnt = LED_CMD_I2C_WRITE_SAMPLE_SIZE;
+      uartCmdPhase = UART_CMD_PHASE_RD_TMP;
+      break;
+    case UART_CMD_PHASE_RD_TMP:
+      // set send data
+      setSendData(&sendData[0], i2CWriteReadTemp, LED_CMD_I2C_WRITE_SAMPLE_SIZE);
+      sendCnt = LED_CMD_I2C_WRITE_SAMPLE_SIZE;
+      uartCmdPhase = UART_CMD_PHASE_I2C_RD_READY;
+      break;
+    case UART_CMD_PHASE_I2C_RD_READY:
+      // set send data
+      setSendData(&sendData[0], i2CReadReady, LED_CMD_I2C_READ_SAMPLE_SIZE);
+      sendCnt = LED_CMD_I2C_READ_SAMPLE_SIZE;
+      uartCmdPhase = UART_CMD_PHASE_I2C_RD;
+      break;
+    case UART_CMD_PHASE_I2C_RD:
+      // set send data
+      setSendData(&sendData[0], i2CReadData, LED_CMD_I2C_READ_SEQ_SIZE);
+      sendCnt = LED_CMD_I2C_READ_SEQ_SIZE;
+      uartCmdPhase = UART_CMD_PHASE_SW_RST;
+      break;
+    default:
+      // no impl
+      break;
+  }
 
   // send
   if(sendCnt > 0) {
