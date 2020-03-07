@@ -1,6 +1,10 @@
 # arduino-ioexpander-lib
 Host Library with Arduino for Arduino IO Expander(see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
 
+## Overview
+
+<img width="80%" src="./img/overview.png" />  
+
 ## Installation
 1. Download the zip file.
 2. Move the zip file to your libraries directory.
