@@ -1,3 +1,5 @@
+// UART Command Sample (I2C RW)
+
 // D10(RX)  <-  TX
 // D11(TX)  ->  RX
 
@@ -94,6 +96,8 @@ void SerialHexPrint(char n) {
   Serial.print((n & 0x000000FF), HEX);
 }
 
+bool waitReadI2CData = false;
+
 void loop() {
 
   while (mySerial.available()) {
@@ -111,9 +115,26 @@ void loop() {
     }
     Serial.println(" :receive");
     readCnt = 0;
-  }
 
-  delay(3000);
+    if(waitReadI2CData) {
+      waitReadI2CData = false;
+      int posi = 0;
+      if( (readData[posi] == 0x06) || (readData[posi] == 0x15) ) {
+        posi++;
+      }
+      uint16_t tmp = readData[posi];
+      tmp = tmp << 8;
+      tmp = tmp | readData[posi+1];
+      tmp = tmp & 0xFFFC;
+    
+      float temp = -46.85 + (175.72 * tmp / 65536);
+    
+      Serial.print("Temperature: ");
+      Serial.print(temp, 1);
+      Serial.println(" C");
+    }
+  
+  }
 
   switch(uartCmdPhase){
     case UART_CMD_PHASE_SW_RST:
@@ -139,6 +160,7 @@ void loop() {
       setSendData(&sendData[0], i2CReadData, LED_CMD_I2C_READ_SEQ_SIZE);
       sendCnt = LED_CMD_I2C_READ_SEQ_SIZE;
       uartCmdPhase = UART_CMD_PHASE_SW_RST;
+      waitReadI2CData = true;
       break;
     default:
       // no impl
@@ -159,6 +181,8 @@ void loop() {
     Serial.println(" :send");
     sendCnt = 0;
   }
+
+  delay(3000);
 
 }
 
