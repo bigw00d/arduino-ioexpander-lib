@@ -1,5 +1,5 @@
 # arduino-ioexpander-lib
-Host Library with Arduino for Arduino IO Expander(see [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw))
+Host Library with Arduino for [arduino-ioexpander-fw](https://github.com/bigw00d/arduino-ioexpander-fw)
 
 ## Overview
 
